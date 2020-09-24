@@ -48,6 +48,19 @@ app.delete("/messages/:messageId", function (req, res) {
   messages.splice(indexOfMessage, 1);
   res.send(messageToDelete);
 });
+
+// this is a trivial implementation
+app.use((err, req, res, next) => {
+  // you can error out to stderr still, or not; your choice
+  console.error(err);
+
+  // body-parser will set this to 400 if the json is in error
+  if (err.status === 400)
+    return res.status(err.status).send("Dude, you messed up the JSON");
+
+  return next(err); // if it's not a 400, let the default error handling do it.
+});
+
 app.listen(3000, () => {
   console.log("I'm listening");
 });
