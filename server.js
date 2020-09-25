@@ -24,11 +24,29 @@ app.get("/messages", function (request, response) {
   response.send(messages);
 });
 
+app.get("/messages/latest", function (req, res) {
+  console.log(messages.slice(-10));
+  res.send(messages.slice(-10));
+});
+
+app.get("/messages/search", function (req, res) {
+  const queryParam = req.query.text;
+  const theMessage = messages.filter((message) =>
+    message.text.includes(queryParam)
+  );
+  res.send(theMessage);
+});
+
 app.post("/messages", function (req, res) {
   const newMessage = req.body;
+  console.log(newMessage.text);
   console.log(newMessage);
   messages.push(newMessage);
-  res.send(newMessage);
+  if (!newMessage.text || !newMessage.from) {
+    res.status(400).send("something's wrong");
+  } else {
+    res.send(newMessage);
+  }
 });
 
 app.get("/messages/:messageId", function (req, res) {
@@ -47,18 +65,6 @@ app.delete("/messages/:messageId", function (req, res) {
   const indexOfMessage = messages.indexOf(messageToDelete);
   messages.splice(indexOfMessage, 1);
   res.send(messageToDelete);
-});
-
-// this is a trivial implementation
-app.use((err, req, res, next) => {
-  // you can error out to stderr still, or not; your choice
-  console.error(err);
-
-  // body-parser will set this to 400 if the json is in error
-  if (err.status === 400)
-    return res.status(err.status).send("Dude, you messed up the JSON");
-
-  return next(err); // if it's not a 400, let the default error handling do it.
 });
 
 app.listen(3000, () => {
